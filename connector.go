@@ -84,7 +84,9 @@ func (c *connector) Connect(ctx context.Context) (driver.Conn, error) {
 		return nil, err
 	}
 
-	if plugin == "" {
+	if len(c.cfg.DefaultAuthPlugin) > 0 {
+		plugin = c.cfg.DefaultAuthPlugin
+	} else if plugin == "" {
 		plugin = defaultAuthPlugin
 	}
 

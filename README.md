@@ -253,6 +253,16 @@ SELECT u.id FROM users as u
 
 will return `u.id` instead of just `id` if `columnsWithAlias=true`.
 
+##### `defaultAuthPlugin`
+
+```
+Type:           string
+Valid Values:   <escaped name>
+Default:        ""
+```
+
+`defaultAuthPlugin=mysql_clear_password` let the client decide the auth plugin.
+
 ##### `interpolateParams`
 
 ```

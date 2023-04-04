@@ -34,22 +34,23 @@ var (
 // If a new Config is created instead of being parsed from a DSN string,
 // the NewConfig function should be used, which sets default values.
 type Config struct {
-	User             string            // Username
-	Passwd           string            // Password (requires User)
-	Net              string            // Network type
-	Addr             string            // Network address (requires Net)
-	DBName           string            // Database name
-	Params           map[string]string // Connection parameters
-	Collation        string            // Connection collation
-	Loc              *time.Location    // Location for time.Time values
-	MaxAllowedPacket int               // Max packet size allowed
-	ServerPubKey     string            // Server public key name
-	pubKey           *rsa.PublicKey    // Server public key
-	TLSConfig        string            // TLS configuration name
-	TLS              *tls.Config       // TLS configuration, its priority is higher than TLSConfig
-	Timeout          time.Duration     // Dial timeout
-	ReadTimeout      time.Duration     // I/O read timeout
-	WriteTimeout     time.Duration     // I/O write timeout
+	User              string            // Username
+	Passwd            string            // Password (requires User)
+	Net               string            // Network type
+	Addr              string            // Network address (requires Net)
+	DBName            string            // Database name
+	Params            map[string]string // Connection parameters
+	Collation         string            // Connection collation
+	Loc               *time.Location    // Location for time.Time values
+	MaxAllowedPacket  int               // Max packet size allowed
+	ServerPubKey      string            // Server public key name
+	pubKey            *rsa.PublicKey    // Server public key
+	TLSConfig         string            // TLS configuration name
+	TLS               *tls.Config       // TLS configuration, its priority is higher than TLSConfig
+	Timeout           time.Duration     // Dial timeout
+	ReadTimeout       time.Duration     // I/O read timeout
+	WriteTimeout      time.Duration     // I/O write timeout
+	DefaultAuthPlugin string
 
 	AllowAllFiles            bool // Allow all files to be used with LOAD DATA LOCAL INFILE
 	AllowCleartextPasswords  bool // Allows the cleartext client side plugin
@@ -204,6 +205,10 @@ func (cfg *Config) FormatDSN() string {
 	if cfg.AllowAllFiles {
 		hasParam = true
 		buf.WriteString("?allowAllFiles=true")
+	}
+
+	if len(cfg.DefaultAuthPlugin) > 0 {
+		writeDSNParam(&buf, &hasParam, "defaultAuthPlugin", cfg.DefaultAuthPlugin)
 	}
 
 	if cfg.AllowCleartextPasswords {
@@ -400,6 +405,12 @@ func parseDSNParams(cfg *Config, params string) (err error) {
 			if !isBool {
 				return errors.New("invalid bool value: " + value)
 			}
+
+		case "defaultAuthPlugin":
+			if value, err = url.QueryUnescape(value); err != nil {
+				return
+			}
+			cfg.DefaultAuthPlugin = value
 
 		// Allow fallback to unencrypted connection if server does not support TLS
 		case "allowFallbackToPlaintext":
